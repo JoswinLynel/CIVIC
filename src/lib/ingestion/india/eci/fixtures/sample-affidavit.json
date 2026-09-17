@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "source_mode": "fixture",
+    "verification_status": "synthetic_test_data",
+    "source_url": "https://affidavit.eci.gov.in/show-profile/12345/2024",
+    "retrieved_at": "2026-09-17T00:00:00Z",
+    "publisher": "Election Commission of India",
+    "source_type": "Candidate Affidavit"
+  },
+  "data": {
+    "election": {
+      "name": "General Election to Lok Sabha 2024",
+      "election_type": "General Election",
+      "election_date": "2024-04-19"
+    },
+    "constituency": {
+      "name": "Varanasi",
+      "region": "Uttar Pradesh"
+    },
+    "party": {
+      "name": "Bharatiya Janata Party",
+      "short_name": "BJP"
+    },
+    "candidate": {
+      "first_name": "Narendra",
+      "middle_name": "Damodardas",
+      "last_name": "Modi",
+      "is_winner": true,
+      "votes_received": 612970,
+      "vote_share": 54.24
+    },
+    "financial_declaration": {
+      "declaration_date": "2024-05-14",
+      "currency": "INR",
+      "assets": [
+        {
+          "asset_type": "Movable",
+          "description": "Cash in hand, Bank deposits, NSS, Postal Savings, LIC Policies",
+          "declared_value": 30206889
+        },
+        {
+          "asset_type": "Immovable",
+          "description": "Agricultural Land, Commercial Buildings, Residential Buildings",
+          "declared_value": 0
+        }
+      ],
+      "liabilities": []
+    }
+  }
+}
