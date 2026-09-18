@@ -1,7 +1,5 @@
 -- Enable Extensions
-CREATE EXTENSION IF NOT EXISTS vector;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 -- Base trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -13,7 +11,7 @@ $$ language 'plpgsql';
 
 -- 1. COUNTRIES
 CREATE TABLE countries (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     iso2_code VARCHAR(2) UNIQUE NOT NULL,
     iso3_code VARCHAR(3) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -33,7 +31,7 @@ CREATE TRIGGER update_countries_modtime BEFORE UPDATE ON countries FOR EACH ROW 
 
 -- 2. SOURCES (Provenance first-class)
 CREATE TABLE sources (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     publisher VARCHAR(255) NOT NULL,
     title TEXT NOT NULL,
     url TEXT,
@@ -53,7 +51,7 @@ CREATE TRIGGER update_sources_modtime BEFORE UPDATE ON sources FOR EACH ROW EXEC
 
 -- 3. DOCUMENTS
 CREATE TABLE documents (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_id UUID REFERENCES sources(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     document_type VARCHAR(100),
@@ -67,7 +65,7 @@ CREATE TRIGGER update_documents_modtime BEFORE UPDATE ON documents FOR EACH ROW 
 
 -- 4. PEOPLE
 CREATE TABLE people (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     middle_name VARCHAR(100),
@@ -84,7 +82,7 @@ CREATE TRIGGER update_people_modtime BEFORE UPDATE ON people FOR EACH ROW EXECUT
 
 -- 5. PARTIES
 CREATE TABLE parties (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     name VARCHAR(255) NOT NULL,
     short_name VARCHAR(50),
@@ -101,7 +99,7 @@ CREATE TRIGGER update_parties_modtime BEFORE UPDATE ON parties FOR EACH ROW EXEC
 
 -- 6. POSITIONS
 CREATE TABLE positions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -113,7 +111,7 @@ CREATE TRIGGER update_positions_modtime BEFORE UPDATE ON positions FOR EACH ROW 
 
 -- 7. POLITICIANS
 CREATE TABLE politicians (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     person_id UUID REFERENCES people(id) NOT NULL,
     country_id UUID REFERENCES countries(id) NOT NULL,
     current_party_id UUID REFERENCES parties(id),
@@ -127,7 +125,7 @@ CREATE TRIGGER update_politicians_modtime BEFORE UPDATE ON politicians FOR EACH 
 
 -- 8. POLITICAL TENURES
 CREATE TABLE political_tenures (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     politician_id UUID REFERENCES politicians(id) NOT NULL,
     position_id UUID REFERENCES positions(id) NOT NULL,
     party_id UUID REFERENCES parties(id),
@@ -142,7 +140,7 @@ CREATE TRIGGER update_political_tenures_modtime BEFORE UPDATE ON political_tenur
 
 -- 9. COMPANIES & ORGANISATIONS
 CREATE TABLE companies (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     legal_name VARCHAR(255),
     registration_number VARCHAR(100),
@@ -157,7 +155,7 @@ CREATE TABLE companies (
 CREATE TRIGGER update_companies_modtime BEFORE UPDATE ON companies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE organisations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     org_type VARCHAR(100),
     country_id UUID REFERENCES countries(id),
@@ -170,7 +168,7 @@ CREATE TRIGGER update_organisations_modtime BEFORE UPDATE ON organisations FOR E
 
 -- 10. FINANCIAL DATA
 CREATE TABLE financial_declarations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     politician_id UUID REFERENCES politicians(id) NOT NULL,
     source_id UUID REFERENCES sources(id) NOT NULL,
     declaration_date DATE NOT NULL,
@@ -182,7 +180,7 @@ CREATE TABLE financial_declarations (
 CREATE TRIGGER update_financial_declarations_modtime BEFORE UPDATE ON financial_declarations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE assets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     declaration_id UUID REFERENCES financial_declarations(id) ON DELETE CASCADE,
     asset_type VARCHAR(100),
     description TEXT,
@@ -193,7 +191,7 @@ CREATE TABLE assets (
 );
 
 CREATE TABLE liabilities (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     declaration_id UUID REFERENCES financial_declarations(id) ON DELETE CASCADE,
     liability_type VARCHAR(100),
     description TEXT,
@@ -204,7 +202,7 @@ CREATE TABLE liabilities (
 );
 
 CREATE TABLE income_records (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     declaration_id UUID REFERENCES financial_declarations(id) ON DELETE CASCADE,
     income_source VARCHAR(255),
     declared_value NUMERIC,
@@ -214,7 +212,7 @@ CREATE TABLE income_records (
 );
 
 CREATE TABLE business_interests (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     person_id UUID REFERENCES people(id) NOT NULL,
     company_id UUID REFERENCES companies(id) NOT NULL,
     interest_type VARCHAR(100),
@@ -225,7 +223,7 @@ CREATE TABLE business_interests (
 );
 
 CREATE TABLE donations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     donor_entity_type VARCHAR(50),
     donor_entity_id UUID,
     recipient_entity_type VARCHAR(50),
@@ -241,7 +239,7 @@ CREATE TABLE donations (
 
 -- 11. RELATIONSHIPS GRAPH
 CREATE TABLE relationships (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_entity_type VARCHAR(50) NOT NULL,
     source_entity_id UUID NOT NULL,
     target_entity_type VARCHAR(50) NOT NULL,
@@ -261,7 +259,7 @@ CREATE INDEX idx_relationships_target ON relationships(target_entity_type, targe
 
 -- 12. NEWS
 CREATE TABLE news_articles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_id UUID REFERENCES sources(id) ON DELETE CASCADE,
     country_id UUID REFERENCES countries(id),
     civic_summary TEXT,
@@ -272,13 +270,13 @@ CREATE TABLE news_articles (
 CREATE TRIGGER update_news_articles_modtime BEFORE UPDATE ON news_articles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE news_topics (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     article_id UUID REFERENCES news_articles(id) ON DELETE CASCADE,
     topic VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE news_mentions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     article_id UUID REFERENCES news_articles(id) ON DELETE CASCADE,
     entity_type VARCHAR(50) NOT NULL,
     entity_id UUID NOT NULL,
@@ -287,7 +285,7 @@ CREATE TABLE news_mentions (
 
 -- 13. LEGAL / INVESTIGATIONS
 CREATE TABLE investigations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
     country_id UUID REFERENCES countries(id),
@@ -300,7 +298,7 @@ CREATE TABLE investigations (
 CREATE TRIGGER update_investigations_modtime BEFORE UPDATE ON investigations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE court_cases (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     case_number VARCHAR(100),
     court_name VARCHAR(255),
     country_id UUID REFERENCES countries(id),
@@ -313,7 +311,7 @@ CREATE TABLE court_cases (
 CREATE TRIGGER update_court_cases_modtime BEFORE UPDATE ON court_cases FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE legal_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     investigation_id UUID REFERENCES investigations(id),
     court_case_id UUID REFERENCES court_cases(id),
     event_type VARCHAR(100) NOT NULL,
@@ -326,7 +324,7 @@ CREATE TABLE legal_events (
 );
 
 CREATE TABLE allegations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entity_type VARCHAR(50) NOT NULL,
     entity_id UUID NOT NULL,
     description TEXT,
@@ -336,7 +334,7 @@ CREATE TABLE allegations (
 );
 
 CREATE TABLE charges (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     court_case_id UUID REFERENCES court_cases(id),
     entity_type VARCHAR(50) NOT NULL,
     entity_id UUID NOT NULL,
@@ -346,7 +344,7 @@ CREATE TABLE charges (
 );
 
 CREATE TABLE convictions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     charge_id UUID REFERENCES charges(id),
     sentence TEXT,
     conviction_date DATE,
@@ -355,7 +353,7 @@ CREATE TABLE convictions (
 );
 
 CREATE TABLE court_outcomes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     court_case_id UUID REFERENCES court_cases(id),
     outcome_type VARCHAR(100),
     description TEXT,
@@ -365,7 +363,7 @@ CREATE TABLE court_outcomes (
 
 -- 14. POLITICS & ELECTIONS
 CREATE TABLE elections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     election_type VARCHAR(100),
     election_date DATE,
@@ -377,7 +375,7 @@ CREATE TABLE elections (
 CREATE TRIGGER update_elections_modtime BEFORE UPDATE ON elections FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE constituencies (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     name VARCHAR(255) NOT NULL,
     region VARCHAR(100),
@@ -386,7 +384,7 @@ CREATE TABLE constituencies (
 );
 
 CREATE TABLE candidates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     election_id UUID REFERENCES elections(id) NOT NULL,
     constituency_id UUID REFERENCES constituencies(id) NOT NULL,
     person_id UUID REFERENCES people(id) NOT NULL,
@@ -398,7 +396,7 @@ CREATE TABLE candidates (
 );
 
 CREATE TABLE election_results (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     candidate_id UUID REFERENCES candidates(id) NOT NULL,
     votes_received BIGINT,
     vote_share NUMERIC,
@@ -409,7 +407,7 @@ CREATE TABLE election_results (
 
 -- 15. PARLIAMENTARY ACTIVITY
 CREATE TABLE parliamentary_activity (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     session_name VARCHAR(100),
     start_date DATE,
@@ -419,7 +417,7 @@ CREATE TABLE parliamentary_activity (
 );
 
 CREATE TABLE bills (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     activity_id UUID REFERENCES parliamentary_activity(id),
     title TEXT NOT NULL,
     description TEXT,
@@ -430,7 +428,7 @@ CREATE TABLE bills (
 );
 
 CREATE TABLE votes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     bill_id UUID REFERENCES bills(id),
     politician_id UUID REFERENCES politicians(id) NOT NULL,
     vote_decision VARCHAR(50),
@@ -440,7 +438,7 @@ CREATE TABLE votes (
 );
 
 CREATE TABLE speeches (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     activity_id UUID REFERENCES parliamentary_activity(id),
     politician_id UUID REFERENCES politicians(id) NOT NULL,
     transcript TEXT,
@@ -451,7 +449,7 @@ CREATE TABLE speeches (
 );
 
 CREATE TABLE questions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     activity_id UUID REFERENCES parliamentary_activity(id),
     politician_id UUID REFERENCES politicians(id) NOT NULL,
     question_text TEXT,
@@ -463,7 +461,7 @@ CREATE TABLE questions (
 );
 
 CREATE TABLE committees (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     activity_id UUID REFERENCES parliamentary_activity(id),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -473,7 +471,7 @@ CREATE TABLE committees (
 );
 
 CREATE TABLE attendance (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     activity_id UUID REFERENCES parliamentary_activity(id),
     politician_id UUID REFERENCES politicians(id) NOT NULL,
     days_present INT,
@@ -485,7 +483,7 @@ CREATE TABLE attendance (
 
 -- 16. POWER METRICS
 CREATE TABLE military_metrics (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     year INT NOT NULL,
     military_expenditure NUMERIC,
@@ -496,7 +494,7 @@ CREATE TABLE military_metrics (
 );
 
 CREATE TABLE defence_metrics (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     year INT NOT NULL,
     description TEXT,
@@ -506,7 +504,7 @@ CREATE TABLE defence_metrics (
 );
 
 CREATE TABLE arms_transfers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     supplier_country_id UUID REFERENCES countries(id),
     recipient_country_id UUID REFERENCES countries(id),
     year INT NOT NULL,
@@ -517,7 +515,7 @@ CREATE TABLE arms_transfers (
 );
 
 CREATE TABLE nuclear_metrics (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     year INT NOT NULL,
     estimated_inventory INT,
@@ -527,7 +525,7 @@ CREATE TABLE nuclear_metrics (
 );
 
 CREATE TABLE strategic_capabilities (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     capability_name VARCHAR(255),
     description TEXT,
@@ -536,7 +534,7 @@ CREATE TABLE strategic_capabilities (
 );
 
 CREATE TABLE economic_metrics (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     country_id UUID REFERENCES countries(id) NOT NULL,
     year INT NOT NULL,
     gdp NUMERIC,
@@ -549,7 +547,7 @@ CREATE TABLE economic_metrics (
 
 -- 17. AI & RAG ARCHITECTURE
 CREATE TABLE ai_documents (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     source_id UUID REFERENCES sources(id),
     content TEXT NOT NULL,
     document_hash VARCHAR(255),
@@ -558,7 +556,7 @@ CREATE TABLE ai_documents (
 );
 
 CREATE TABLE ai_chunks (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ai_document_id UUID REFERENCES ai_documents(id) ON DELETE CASCADE,
     chunk_index INT NOT NULL,
     chunk_text TEXT NOT NULL,
@@ -567,21 +565,30 @@ CREATE TABLE ai_chunks (
 );
 
 CREATE TABLE ai_embeddings (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ai_chunk_id UUID REFERENCES ai_chunks(id) ON DELETE CASCADE,
-    embedding vector(768), 
+    embedding extensions.vector(768), 
     created_at TIMESTAMPTZ DEFAULT now()
 );
-CREATE INDEX idx_ai_embeddings_vector ON ai_embeddings USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX idx_ai_embeddings_vector ON ai_embeddings USING hnsw (embedding extensions.vector_cosine_ops);
 
 CREATE TABLE ai_answers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     question TEXT NOT NULL,
     answer TEXT NOT NULL,
     sources_used JSONB DEFAULT '[]'::jsonb,
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- 18. IDEMPOTENCY CONSTRAINTS
+CREATE UNIQUE INDEX idx_sources_url ON sources(url) WHERE url IS NOT NULL;
+ALTER TABLE companies ADD CONSTRAINT companies_country_reg_uq UNIQUE (country_id, registration_number);
+ALTER TABLE candidates ADD CONSTRAINT candidates_election_person_const_uq UNIQUE (election_id, person_id, constituency_id);
+ALTER TABLE election_results ADD CONSTRAINT election_results_candidate_uq UNIQUE (candidate_id);
+CREATE UNIQUE INDEX idx_news_articles_source ON news_articles(source_id) WHERE source_id IS NOT NULL;
+ALTER TABLE ai_documents ADD CONSTRAINT ai_documents_hash_uq UNIQUE (document_hash);
+ALTER TABLE ai_chunks ADD CONSTRAINT ai_chunks_doc_index_uq UNIQUE (ai_document_id, chunk_index);
 
 -- Indexes
 CREATE INDEX idx_people_name ON people(full_name);

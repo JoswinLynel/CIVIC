@@ -4,8 +4,27 @@ import { CivicSource } from '@/components/ui/civic-source';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'fake-key'
+  process.env.SUPABASE_SECRET_KEY || 'fake-key'
 );
+
+interface AssetLiability {
+  declared_value?: string | number | null;
+}
+
+interface FinancialDeclaration {
+  id: string;
+  declaration_date: string;
+  currency: string;
+  assets?: AssetLiability[];
+  liabilities?: AssetLiability[];
+  sources?: {
+    url: string;
+    publisher: string;
+    source_type: string;
+    retrieved_at: string;
+    verification_status: string;
+  };
+}
 
 export default async function PoliticianPage({ params }: { params: { id: string } }) {
   // Wait for params in Next.js 15
@@ -37,9 +56,9 @@ export default async function PoliticianPage({ params }: { params: { id: string 
         <h2 className="text-2xl font-semibold mb-4 border-b border-slate-700 pb-2">Financial Declarations</h2>
         {financials && financials.length > 0 ? (
           <div className="space-y-8">
-            {financials.map((decl: any) => {
-              const totalAssets = decl.assets?.reduce((sum: number, a: any) => sum + Number(a.declared_value || 0), 0) || 0;
-              const totalLiabilities = decl.liabilities?.reduce((sum: number, l: any) => sum + Number(l.declared_value || 0), 0) || 0;
+            {financials.map((decl: FinancialDeclaration) => {
+              const totalAssets = decl.assets?.reduce((sum: number, a: AssetLiability) => sum + Number(a.declared_value || 0), 0) || 0;
+              const totalLiabilities = decl.liabilities?.reduce((sum: number, l: AssetLiability) => sum + Number(l.declared_value || 0), 0) || 0;
               const netDeclaredPosition = totalAssets - totalLiabilities;
               const source = decl.sources;
 

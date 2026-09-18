@@ -11,7 +11,7 @@ export interface ParsedECIRecord {
 
 export class ECIParser implements Parser<ParsedECIRecord> {
   async parse(rawSource: RawSource): Promise<ParsedECIRecord> {
-    const data = rawSource.rawContent as any;
+    const data = rawSource.rawContent as Record<string, Record<string, unknown>>;
     if (!data.election || !data.candidate) {
       throw new Error('Invalid ECI source data structure: missing election or candidate');
     }

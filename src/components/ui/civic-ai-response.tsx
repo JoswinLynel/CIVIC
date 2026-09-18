@@ -7,7 +7,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export interface CivicAIResponseProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CivicAIResponseProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function CivicAIResponse({ className, children, ...props }: CivicAIResponseProps) {
   return (

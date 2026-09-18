@@ -1,11 +1,8 @@
 import { EntityResolver, NormalizedData, ResolutionResult } from '../../interfaces';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '../shared/../../../../utils/supabase/admin'; // src/utils/supabase/admin from src/lib/ingestion/india/shared
 
-// Server-side admin client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'fake-key'
-);
+// Setup Supabase admin client
+const supabase = createAdminClient();
 
 export class IndiaEntityResolver implements EntityResolver {
   async resolve(normalizedData: NormalizedData, existingEntities: unknown[]): Promise<ResolutionResult> {

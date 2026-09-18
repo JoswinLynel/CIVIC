@@ -578,7 +578,7 @@ Examples:
 ```env
 GEMINI_API_KEY=
 
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_SECRET_KEY=
 ```
 
 Public client configuration is kept separate.
@@ -731,8 +731,8 @@ Add the required credentials:
 GEMINI_API_KEY=
 
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
 ```
 
 Never commit `.env.local`.

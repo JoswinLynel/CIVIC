@@ -6,7 +6,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export interface CivicTimelineProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CivicTimelineProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function CivicTimeline({ className, children, ...props }: CivicTimelineProps) {
   return (

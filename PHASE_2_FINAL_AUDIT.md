@@ -51,7 +51,7 @@ Data does flow through the pipeline, but the separation of concerns is incomplet
 ## 7. Security
 **Status: IMPLEMENTED**
 - **RLS**: Remains enabled on all tables (verified in `20260917000000_initial_schema.sql`).
-- **Service Role**: `SUPABASE_SERVICE_ROLE_KEY` is strictly used server-side (`page.tsx` async fetch and Node script).
+- **Service Role**: `SUPABASE_SECRET_KEY` is strictly used server-side (`page.tsx` async fetch and Node script).
 - **No secrets committed**: Only `.env.example` exists. 
 
 ## 8. Database

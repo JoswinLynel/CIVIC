@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 // Setup Supabase admin client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'fake-key'
+  process.env.SUPABASE_SECRET_KEY || 'fake-key'
 );
 
 async function run() {
@@ -54,7 +54,7 @@ async function run() {
       const res = await supabase.from('sources').insert({
         country_id: country.id,
         publisher: raw.metadata.publisher,
-        title: 'Candidate Affidavit: ' + (fields.candidate as any).first_name,
+        title: 'Candidate Affidavit: ' + (fields.candidate as Record<string, string>).first_name,
         url: raw.sourceUrl,
         source_type: raw.sourceType,
         verification_status: raw.metadata.verification_status,
@@ -66,14 +66,14 @@ async function run() {
     }
     
     // Party
-    const partyName = (fields.party as any).name;
+    const partyName = (fields.party as Record<string, string>).name;
     const resolvedParty = await resolver.resolveParty(partyName);
     let partyId = resolvedParty?.id;
     if (!partyId) {
       const res = await supabase.from('parties').insert({
         country_id: country.id,
         name: partyName,
-        short_name: (fields.party as any).short_name
+        short_name: (fields.party as Record<string, string>).short_name
       }).select().single();
       if (res.error) throw new Error('Party insert error: ' + JSON.stringify(res.error));
       partyId = res.data.id;
@@ -81,13 +81,13 @@ async function run() {
     }
     
     // Constituency
-    const constName = (fields.constituency as any).name;
+    const constName = (fields.constituency as Record<string, string>).name;
     let { data: constituency } = await supabase.from('constituencies').select().eq('name', constName).single();
     if (!constituency) {
       const res = await supabase.from('constituencies').insert({
         country_id: country.id,
         name: constName,
-        region: (fields.constituency as any).region
+        region: (fields.constituency as Record<string, string>).region
       }).select().single();
       if (res.error) throw new Error('Constituency insert error: ' + JSON.stringify(res.error));
       constituency = res.data;
@@ -95,7 +95,7 @@ async function run() {
     }
     
     // Person
-    const cData = fields.candidate as any;
+    const cData = fields.candidate as Record<string, string>;
     let personId = await resolver.resolvePerson(cData.first_name, cData.last_name);
     if (!personId) {
       const res = await supabase.from('people').insert({
@@ -124,7 +124,7 @@ async function run() {
     }
     
     // Financial Declaration
-    const finData = fields.financial_declaration as any;
+    const finData = fields.financial_declaration as { declaration_date: string, currency: string, assets?: Record<string, unknown>[] } & Record<string, unknown>;
     let { data: declaration } = await supabase.from('financial_declarations').select().eq('politician_id', politician.id).eq('declaration_date', finData.declaration_date).single();
     if (!declaration) {
       const res = await supabase.from('financial_declarations').insert({
@@ -139,7 +139,7 @@ async function run() {
       
       // Assets
       if (finData.assets && finData.assets.length > 0) {
-        const assetsToInsert = finData.assets.map((a: any) => ({
+        const assetsToInsert = finData.assets.map((a: Record<string, unknown>) => ({
           declaration_id: declaration.id,
           asset_type: a.asset_type,
           description: a.description,

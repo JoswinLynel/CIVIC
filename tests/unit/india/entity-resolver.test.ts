@@ -12,7 +12,7 @@ vi.mock('@supabase/supabase-js', () => {
           single: vi.fn().mockResolvedValue({
             data: table === 'countries' ? { id: 'ind-123' } : null
           }),
-          then: function(resolve: any) {
+          then: function(resolve: (val: unknown) => void) {
             resolve({ data: table === 'parties' ? [{ id: 'bjp-1', name: 'Bharatiya Janata Party', short_name: 'BJP' }] : null });
           }
         };

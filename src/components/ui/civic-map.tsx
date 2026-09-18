@@ -6,7 +6,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export interface CivicMapProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CivicMapProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function CivicMap({ className, children, ...props }: CivicMapProps) {
   return (
